@@ -5,13 +5,12 @@
 **     Component   : Events
 **     Version     : Driver 01.00
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2021-11-09, 15:14, # CodeGen: 0
+**     Date/Time   : 2021-11-16, 13:05, # CodeGen: 0
 **     Abstract    :
 **         This is user's event module.
 **         Put your event handler code here.
-**     Settings    :
 **     Contents    :
-**         No public methods
+**         Cpu_OnNMI - void Cpu_OnNMI(void);
 **
 ** ###################################################################*/
 /*!
@@ -30,14 +29,30 @@
 #define __Events_H
 /* MODULE Events */
 
-#include "fsl_device_registers.h"
-#include "clockMan1.h"
-#include "pin_init.h"
-#include "osa1.h"
+#include "PE_Types.h"
+#include "PE_Error.h"
+#include "PE_Const.h"
+#include "IO_Map.h"
+#include "Pins1.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
+
+/*
+** ===================================================================
+**     Event       :  Cpu_OnNMI (module Events)
+**
+**     Component   :  Cpu [MK64FN1M0LL12]
+*/
+/*!
+**     @brief
+**         This event is called when the Non maskable interrupt had
+**         occurred. This event is automatically enabled when the [NMI
+**         interrupt] property is set to 'Enabled'.
+*/
+/* ===================================================================*/
+void Cpu_OnNMI(void);
 
 
 /* END Events */

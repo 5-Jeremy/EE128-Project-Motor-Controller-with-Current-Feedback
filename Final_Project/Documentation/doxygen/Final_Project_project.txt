@@ -28,17 +28,6 @@
 */
 
 
-/*!
-** @}
-*/
-/*
-** ###################################################################
-**
-**     This file was created by Processor Expert 10.5 [05.21]
-**     for the Freescale Kinetis series of microcontrollers.
-**
-** ###################################################################
-*/
   /*!
 
 \page page_pinalloc Pins allocation 
