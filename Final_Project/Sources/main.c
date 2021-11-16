@@ -54,6 +54,17 @@ int main(void)
 
   /* Write your code here */
   /* For example: for(;;) { } */
+PORTC_PCR10 = 0x300;   // Port C Pin 10 as FTM3_CH6 (ALT3)
+SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK; /* Enable Port C Clock Gate Control*/
+PORTC_GPCLR = 0x00010100; // GPIO Config 
+GPIOC_PDDR = 0x00000001; // Output mode 
+
+FTM3_MODE = 0x5; // Enable FTM3 
+FTM3_MOD = 34; // period 
+FTM3_C6SC = 0x28; // PWM active high
+FTM3_C6V = 14; // pulse width depending on our duty cycle
+FTM3_SC = (1 << 3) | 1; // system clock; prescale 2
+
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
   /*** RTOS startup code. Macro PEX_RTOS_START is defined by the RTOS component. DON'T MODIFY THIS CODE!!! ***/
