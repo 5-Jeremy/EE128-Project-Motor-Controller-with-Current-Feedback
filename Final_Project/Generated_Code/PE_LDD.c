@@ -6,7 +6,7 @@
 **     Version     : Component 01.046, Driver 01.00, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2021-11-16, 13:05, # CodeGen: 0
+**     Date/Time   : 2021-11-16, 13:12, # CodeGen: 1
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -60,6 +60,15 @@
 
 /*
 ** ===========================================================================
+** Array of initialized device structures of LDD components.
+** ===========================================================================
+*/
+LDD_TDeviceData *PE_LDD_DeviceDataList[1] = {
+    NULL
+  };
+
+/*
+** ===========================================================================
 ** The array of clock frequencies in configured clock configurations.
 ** ===========================================================================
 */
@@ -103,32 +112,6 @@ const TCpuClockConfiguration PE_CpuClockConfigurations[CPU_CLOCK_CONFIG_NUMBER] 
     CPU_OSCER_CLK_HZ_CONFIG_2,         /*!< System OSC external reference clock frequency in clock configuration 2 */
     CPU_ERCLK32K_CLK_HZ_CONFIG_2,      /*!< External reference clock 32k frequency in clock configuration 2 */
     CPU_MCGFF_CLK_HZ_CONFIG_2          /*!< MCG fixed frequency clock */
-  },
-  /* Clock configuration 3 */
-  {
-    CPU_CORE_CLK_HZ_CONFIG_3,          /*!< Core clock frequency in clock configuration 3 */
-    CPU_BUS_CLK_HZ_CONFIG_3,           /*!< Bus clock frequency in clock configuration 3 */
-    CPU_FLEXBUS_CLK_HZ_CONFIG_3,       /*!< Flexbus clock frequency in clock configuration 3 */
-    CPU_FLASH_CLK_HZ_CONFIG_3,         /*!< FLASH clock frequency in clock configuration 3 */
-    CPU_USB_CLK_HZ_CONFIG_3,           /*!< USB clock frequency in clock configuration 3 */
-    CPU_PLL_FLL_CLK_HZ_CONFIG_3,       /*!< PLL/FLL clock frequency in clock configuration 3 */
-    CPU_MCGIR_CLK_HZ_CONFIG_3,         /*!< MCG internal reference clock frequency in clock configuration 3 */
-    CPU_OSCER_CLK_HZ_CONFIG_3,         /*!< System OSC external reference clock frequency in clock configuration 3 */
-    CPU_ERCLK32K_CLK_HZ_CONFIG_3,      /*!< External reference clock 32k frequency in clock configuration 3 */
-    CPU_MCGFF_CLK_HZ_CONFIG_3          /*!< MCG fixed frequency clock */
-  },
-  /* Clock configuration 4 */
-  {
-    CPU_CORE_CLK_HZ_CONFIG_4,          /*!< Core clock frequency in clock configuration 4 */
-    CPU_BUS_CLK_HZ_CONFIG_4,           /*!< Bus clock frequency in clock configuration 4 */
-    CPU_FLEXBUS_CLK_HZ_CONFIG_4,       /*!< Flexbus clock frequency in clock configuration 4 */
-    CPU_FLASH_CLK_HZ_CONFIG_4,         /*!< FLASH clock frequency in clock configuration 4 */
-    CPU_USB_CLK_HZ_CONFIG_4,           /*!< USB clock frequency in clock configuration 4 */
-    CPU_PLL_FLL_CLK_HZ_CONFIG_4,       /*!< PLL/FLL clock frequency in clock configuration 4 */
-    CPU_MCGIR_CLK_HZ_CONFIG_4,         /*!< MCG internal reference clock frequency in clock configuration 4 */
-    CPU_OSCER_CLK_HZ_CONFIG_4,         /*!< System OSC external reference clock frequency in clock configuration 4 */
-    CPU_ERCLK32K_CLK_HZ_CONFIG_4,      /*!< External reference clock 32k frequency in clock configuration 4 */
-    CPU_MCGFF_CLK_HZ_CONFIG_4          /*!< MCG fixed frequency clock */
   }
 };
 
@@ -174,8 +157,17 @@ void PE_FillMemory(register void* SourceAddressPtr, register uint8_t c, register
 /* ===================================================================*/
 bool PE_PeripheralUsed(uint32_t PrphBaseAddress)
 {
-  (void)PrphBaseAddress;               /*!< Parameter is not used, suppress unused argument warning */
-  return FALSE;
+  bool result = FALSE;
+
+  switch (PrphBaseAddress) {
+    /* Base address allocated by peripheral(s) UART0 */
+    case 0x4006A000UL:
+      result = TRUE;
+      break;
+    default:
+      break;
+  }
+  return result;
 }
 
 /*
@@ -192,7 +184,10 @@ bool PE_PeripheralUsed(uint32_t PrphBaseAddress)
 /* ===================================================================*/
 void LDD_SetClockConfiguration(LDD_TClockConfiguration ClockConfiguration)
 {
-  (void)ClockConfiguration;            /*!< Parameter is not used, suppress unused argument warning */
+  /* Component IO1 (Serial_LDD). */
+  if (PE_LDD_DeviceDataList[PE_LDD_COMPONENT_IO1_ID] != NULL) {
+    IO1_SetClockConfiguration(PE_LDD_DeviceDataList[PE_LDD_COMPONENT_IO1_ID], ClockConfiguration);
+  }
 }
 
 /* END PE_LDD. */

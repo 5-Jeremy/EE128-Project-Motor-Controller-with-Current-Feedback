@@ -50,6 +50,8 @@
   
 #include "Cpu.h"
 #include "Pins1.h"
+#include "CsIO1.h"
+#include "IO1.h"
 #include "Events.h"
 
 #ifdef __cplusplus

@@ -7,7 +7,7 @@
 **     Version     : Component 01.100, Driver 1.1, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2021-11-16, 13:05, # CodeGen: 0
+**     Date/Time   : 2021-11-16, 13:12, # CodeGen: 1
 **     Abstract    :
 **
 **     Settings    :
@@ -676,8 +676,8 @@
 **                  COL - Collision detect                 : <Automatic>
 **                  CTS - Clear to send                    : <Automatic>
 **                  RTS - Request to send                  : <Automatic>
-**                  RX - Receive data                      : <Automatic>
-**                  TX - Transmit data                     : <Automatic>
+**                  RX - Receive data                      : UART1_RX_TGTMCU
+**                  TX - Transmit data                     : UART1_TX_TGTMCU
 **                  UART Tx modulator input                : <Automatic>
 **                Custom name                              : UART1
 **                UART1                                    : 

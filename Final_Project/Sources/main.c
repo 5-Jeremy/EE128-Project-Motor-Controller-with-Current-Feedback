@@ -31,6 +31,8 @@
 #include "Cpu.h"
 #include "Events.h"
 #include "Pins1.h"
+#include "CsIO1.h"
+#include "IO1.h"
 /* Including shared modules, which are used for whole project */
 #include "PE_Types.h"
 #include "PE_Error.h"

@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : K64P144M120SF5RM, Rev.2, January 2014
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2021-11-16, 13:05, # CodeGen: 0
+**     Date/Time   : 2021-11-16, 13:12, # CodeGen: 1
 **     Abstract    :
 **
 **     Settings    :
@@ -86,6 +86,38 @@ extern "C" {
 #if CPU_COMMON_INIT
 void Common_Init(void)
 {
+  /* Common initialization of registers which initialization is required 
+     for proper functionality of components in the project but initialization
+     component which would be configuring these registers is missing 
+     in the project. 
+     Add associated initialization component to the project to avoid 
+     initialization of registers in the Common_Init().
+     Also, after reset value optimization property affects initialization of 
+     registers in this method (see active generator configuration 
+     Optimizations\Utilize after reset values property or enabled processor 
+     component Common settings\Utilize after reset values property) */
+  /* Enable clock gate of peripherals initialized in Common_Init() */
+  /* SIM_SCGC5: PORTB=1 */
+  SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
+
+  /* PORTB_PCR16: ISF=0,MUX=3 */
+  PORTB_PCR16 = (uint32_t)((PORTB_PCR16 & (uint32_t)~(uint32_t)(
+                 PORT_PCR_ISF_MASK |
+                 PORT_PCR_MUX(0x04)
+                )) | (uint32_t)(
+                 PORT_PCR_MUX(0x03)
+                ));
+  /* PORTB_PCR17: ISF=0,MUX=3 */
+  PORTB_PCR17 = (uint32_t)((PORTB_PCR17 & (uint32_t)~(uint32_t)(
+                 PORT_PCR_ISF_MASK |
+                 PORT_PCR_MUX(0x04)
+                )) | (uint32_t)(
+                 PORT_PCR_MUX(0x03)
+                ));
+
+  /* Disable clock gate of peripherals initialized in Common_Init() */
+  /* SIM_SCGC5: PORTB=0 */
+  SIM_SCGC5 &= (uint32_t)~(uint32_t)(SIM_SCGC5_PORTB_MASK);
 }
 
 #endif /* CPU_COMMON_INIT */
@@ -107,6 +139,8 @@ void Common_Init(void)
 #if CPU_COMPONENTS_INIT
 void Components_Init(void)
 {
+  /* ### Serial_LDD "IO1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
+  (void)IO1_Init(NULL);
 }
 #endif /* CPU_COMPONENTS_INIT */
 

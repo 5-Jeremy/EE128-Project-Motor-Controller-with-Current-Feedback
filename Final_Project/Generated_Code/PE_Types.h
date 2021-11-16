@@ -6,7 +6,7 @@
 **     Component   : PE_Types
 **     Version     : Driver 01.01
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2021-11-16, 13:05, # CodeGen: 0
+**     Date/Time   : 2021-11-16, 13:12, # CodeGen: 1
 **     Abstract    :
 **         PE_Types.h - contains definitions of basic types,
 **         register access macros and hardware specific macros
@@ -199,6 +199,14 @@ typedef unsigned long int       uint32;
 #define PE_LDD_GetDeviceStructure(ComponentIndex) (PE_LDD_DeviceDataList[ComponentIndex])
 
 /*
+** ===========================================================================
+** LDD component ID specifying the component instance in the project. This ID
+** is used internally as an index to the array of LDD device structures.
+** ===========================================================================
+*/
+#define PE_LDD_COMPONENT_IO1_ID                  0x00U
+
+/*
 ** ===================================================================
 ** Global HAL types and constants
 ** ===================================================================
@@ -224,6 +232,8 @@ typedef enum {
 typedef uint16_t LDD_TDriverState;     /*!< Driver state type. */
 typedef void LDD_TCallbackParam;       /*!< Pointer to this type specifies the user data to be passed as a callback parameter. */
 typedef void (* LDD_TCallback)(LDD_TCallbackParam *CallbackParam); /*!< Callback type used for definition of callback functions. */
+
+extern LDD_TDeviceData *PE_LDD_DeviceDataList[]; /*!< Array of LDD component device structures */
 
 
 /* Fills a memory area block by a specified value. Function defined in PE_LDD.c */
