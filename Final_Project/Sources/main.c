@@ -53,17 +53,20 @@ int main(void)
   /*** End of Processor Expert internal initialization.                    ***/
 
   /* Write your code here */
-  /* For example: for(;;) { } */
+  SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
+SIM_SCGC3 |= SIM_SCGC3_FTM3_MASK;
+// Need to do this after the clock gating
 PORTC_PCR10 = 0x300;   // Port C Pin 10 as FTM3_CH6 (ALT3)
-SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK; /* Enable Port C Clock Gate Control*/
 PORTC_GPCLR = 0x00010100; // GPIO Config 
 GPIOC_PDDR = 0x00000001; // Output mode 
 
 FTM3_MODE = 0x5; // Enable FTM3 
-FTM3_MOD = 34; // period 
+FTM3_MOD = 209; // period
 FTM3_C6SC = 0x28; // PWM active high
-FTM3_C6V = 14; // pulse width depending on our duty cycle
+FTM3_C6V = 84; // pulse width depending on our duty cycle
 FTM3_SC = (1 << 3) | 1; // system clock; prescale 2
+
+for (;;);
 
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
