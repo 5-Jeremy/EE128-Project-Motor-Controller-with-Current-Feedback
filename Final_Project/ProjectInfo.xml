@@ -57,7 +57,10 @@
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\CsIO1.c</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\IO1.c</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\PE_LDD.c</PathName>
+      <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\PWM1.c</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\Pins1.c</PathName>
+      <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\PwmLdd1.c</PathName>
+      <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\TU1.c</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Project_Settings\Startup_Code\startup.c</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Sources\Events.c</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Sources\main.c</PathName>
@@ -76,7 +79,10 @@
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\PE_Error.h</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\PE_LDD.h</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\PE_Types.h</PathName>
+      <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\PWM1.h</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\Pins1.h</PathName>
+      <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\PwmLdd1.h</PathName>
+      <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\TU1.h</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Generated_Code\Vectors_Config.h</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Sources\Events.h</PathName>
       <PathName>C:\Users\jcarl\Documents\GitHub\EE128-Project-Motor-Controller-with-Current-Feedback\Final_Project\Static_Code\IO_Map\MK64F12.h</PathName>

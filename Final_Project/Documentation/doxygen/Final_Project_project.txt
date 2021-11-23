@@ -27,6 +27,8 @@
 
 \page page_components Components 
 - \subpage IO1
+- \subpage TU1
+- \subpage PwmLdd1
 
 */
 
@@ -60,6 +62,8 @@
 
 \page page_components Components 
 - \subpage IO1
+- \subpage TU1
+- \subpage PwmLdd1
 
 */
 

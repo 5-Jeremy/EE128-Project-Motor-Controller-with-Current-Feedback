@@ -447,7 +447,7 @@
 			<tr bgcolor='#EFF174'><td>CMP0</td><td>cmp_in3</td><td>alt0</td><td>Input</td></tr>
 			<tr>
 				<td>82</td><td>ADC1_SE6b/PTC10/I2C1_SCL/FTM3_CH6/I2S0_RX_FS/FB_AD5</td><td>J26_10</td>
-				<td bgcolor='#F8FF9A'>ADC1</td><td bgcolor='#F8FF9A'>adc_seb6</td><td bgcolor='#F8FF9A'>alt0</td><td bgcolor='#F8FF9A'>Input</td>
+				<td bgcolor='#86DAFF'>FTM3</td><td bgcolor='#86DAFF'>tmr_ch6</td><td bgcolor='#86DAFF'>alt3</td><td bgcolor='#86DAFF'>Output</td>
 			</tr>
 			<tr>
 				<td>83</td><td>ADC1_SE7b/PTC11/LLWU_P11/I2C1_SDA/FTM3_CH7/I2S0_RXD1/FB_RW_b</td><td>J26_12</td>
@@ -2190,7 +2190,7 @@
 			<tr bgcolor='#EFF174'><td>CMP0</td><td>cmp_in3</td><td>alt0</td><td>Input</td></tr>
 			<tr>
 				<td>82</td><td>ADC1_SE6b/PTC10/I2C1_SCL/FTM3_CH6/I2S0_RX_FS/FB_AD5</td><td>J26_10</td>
-				<td bgcolor='#F8FF9A'>ADC1</td><td bgcolor='#F8FF9A'>adc_seb6</td><td bgcolor='#F8FF9A'>alt0</td><td bgcolor='#F8FF9A'>Input</td>
+				<td bgcolor='#86DAFF'>FTM3</td><td bgcolor='#86DAFF'>tmr_ch6</td><td bgcolor='#86DAFF'>alt3</td><td bgcolor='#86DAFF'>Output</td>
 			</tr>
 			<tr>
 				<td>83</td><td>ADC1_SE7b/PTC11/LLWU_P11/I2C1_SDA/FTM3_CH7/I2S0_RXD1/FB_RW_b</td><td>J26_12</td>

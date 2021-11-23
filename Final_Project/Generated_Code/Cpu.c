@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : K64P144M120SF5RM, Rev.2, January 2014
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2021-11-16, 13:12, # CodeGen: 1
+**     Date/Time   : 2021-11-23, 08:27, # CodeGen: 4
 **     Abstract    :
 **
 **     Settings    :
@@ -141,6 +141,8 @@ void Components_Init(void)
 {
   /* ### Serial_LDD "IO1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
   (void)IO1_Init(NULL);
+  /* ### PWM_LDD "PwmLdd1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
+  (void)PwmLdd1_Init(NULL);
 }
 #endif /* CPU_COMPONENTS_INIT */
 

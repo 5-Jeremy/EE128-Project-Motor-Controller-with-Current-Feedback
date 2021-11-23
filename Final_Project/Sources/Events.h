@@ -36,6 +36,9 @@
 #include "Pins1.h"
 #include "CsIO1.h"
 #include "IO1.h"
+#include "PWM1.h"
+#include "PwmLdd1.h"
+#include "TU1.h"
 
 #ifdef __cplusplus
 extern "C" {
