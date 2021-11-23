@@ -53,6 +53,15 @@ void PWM_Set_Duty_Cycle(unsigned char desired_duty_cycle_percent) {
 	//PWM1_SetRatio16((65535UL/100) * inverted_duty_cycle);
 	PWM1_SetRatio16(655 * inverted_duty_cycle);
 }
+unsigned short ADC_raw_val(void)
+{
+	//ADC0_SC1A = 0x1A; //Write to SC1A to start conversion from ADC_0
+	ADC0_SC1A = 0x00;
+	while(ADC0_SC2 & ADC_SC2_ADACT_MASK); // Conversion in progress
+	while(!(ADC0_SC1A & ADC_SC1_COCO_MASK));
+	return ADC0_RA;
+}
+
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
@@ -65,10 +74,15 @@ int main(void)
   /*** End of Processor Expert internal initialization.                    ***/
 
   /* Write your code here */
+  // Setup
+  SIM_SCGC6 |= SIM_SCGC6_ADC0_MASK; // 0x8000000u; Enable ADC0 Clock
+  ADC0_CFG1 = 0x0C; // 16bits ADC; Bus Clock
+  ADC0_SC1A = 0x1F; // Disable the module, ADCH = 11111
+
 	// Send a 19% duty cycle signal on start-up to set it as minimum throttle
 	const char startup_pwm_DC = 19;
 	PWM_Set_Duty_Cycle(startup_pwm_DC);
-	software_delay(1000000UL);
+	software_delay(100000UL);
 
 	// Lowest duty cycle that gets the motor to spin
 		// corresponds to 0.18 amps
@@ -77,7 +91,17 @@ int main(void)
 	// corresponds to 0.75 amps
 	const char motor_max_DC = 82;
 
-
+	char i, j;
+	unsigned long sum;
+	for (i = 0; i < 64; ++i) {
+		PWM_Set_Duty_Cycle(startup_pwm_DC  + i);
+		sum = 0;
+		for (j = 0; j < 16; ++j) {
+			sum += ADC_raw_val();
+		}
+		printf("%hu \n", sum >> 4 );
+		software_delay(500000UL);
+	}
 
 
 	/*

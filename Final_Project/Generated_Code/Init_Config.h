@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : K64P144M120SF5RM, Rev.2, January 2014
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2021-11-16, 13:12, # CodeGen: 1
+**     Date/Time   : 2021-11-23, 10:07, # CodeGen: 5
 **     Abstract    :
 **         This file collects Processor Expert components configuration 
 **         and interface files.
@@ -36,7 +36,7 @@
 **                  Clock frequency [MHz]                  : 8
 **                  Capacitor load                         : 0pF
 **                  Oscillator operating mode              : Low power
-**            Clock source settings                        : 5
+**            Clock source settings                        : 3
 **              Clock source setting 0                     : 
 **                Internal reference clock                 : 
 **                  MCGIRCLK clock                         : Enabled
@@ -139,77 +139,6 @@
 **                    PLL output [MHz]                     : 0
 **                    Reference clock divider              : Auto select
 **                    PLL reference clock [MHz]            : 1
-**                    Multiplication factor                : Auto select
-**                    Loss of lock interrupt               : Disabled
-**              Clock source setting 3                     : 
-**                Internal reference clock                 : 
-**                  MCGIRCLK clock                         : Enabled
-**                  MCGIRCLK in stop                       : Disabled
-**                  MCGIRCLK source                        : Fast
-**                    Reference divider                    : 2
-**                  MCGIRCLK clock [MHz]                   : 2
-**                External reference clock                 : 
-**                  OSC0ERCLK clock                        : Disabled
-**                  OSC0ERCLK in stop                      : Disabled
-**                  OSC0ERCLK clock [MHz]                  : 0
-**                  ERCLK32K clock source                  : Auto select
-**                  ERCLK32K. clock [kHz]                  : 0.032768
-**                MCG settings                             : 
-**                  MCG mode                               : BLPE
-**                  MCG output clock                       : External clock
-**                  MCG output [MHz]                       : 0.032768
-**                  MCG external ref. clock source         : RTC oscillator
-**                  MCG external ref. clock [MHz]          : 0.032768
-**                  Clock monitor                          : Disabled
-**                  FLL settings                           : 
-**                    FLL module                           : Disabled
-**                    FLL output [MHz]                     : 0
-**                    MCGFFCLK clock [kHz]                 : 0
-**                    Reference clock source               : External clock
-**                      Reference clock divider            : Auto select
-**                    FLL reference clock [kHz]            : 32.768
-**                    Multiplication factor                : Auto select
-**                  PLL 0 settings                         : 
-**                    PLL module                           : Disabled
-**                    PLL module in Stop                   : Disabled
-**                    PLL output [MHz]                     : 0
-**                    Reference clock divider              : Auto select
-**                    PLL reference clock [MHz]            : 1
-**                    Multiplication factor                : Auto select
-**                    Loss of lock interrupt               : Disabled
-**              Clock source setting 4                     : 
-**                Internal reference clock                 : 
-**                  MCGIRCLK clock                         : Enabled
-**                  MCGIRCLK in stop                       : Disabled
-**                  MCGIRCLK source                        : Slow
-**                  MCGIRCLK clock [MHz]                   : 0.032768
-**                External reference clock                 : 
-**                  OSC0ERCLK clock                        : Enabled
-**                  OSC0ERCLK in stop                      : Disabled
-**                  OSC0ERCLK clock [MHz]                  : 8
-**                  ERCLK32K clock source                  : Auto select
-**                  ERCLK32K. clock [kHz]                  : 0.032768
-**                MCG settings                             : 
-**                  MCG mode                               : PEE
-**                  MCG output clock                       : PLL clock
-**                  MCG output [MHz]                       : 120
-**                  MCG external ref. clock source         : System oscillator 0
-**                  MCG external ref. clock [MHz]          : 8
-**                  Clock monitor                          : Disabled
-**                  FLL settings                           : 
-**                    FLL module                           : Disabled
-**                    FLL output [MHz]                     : 0
-**                    MCGFFCLK clock [kHz]                 : 31.25
-**                    Reference clock source               : External clock
-**                      Reference clock divider            : Auto select
-**                    FLL reference clock [kHz]            : 31.25
-**                    Multiplication factor                : Auto select
-**                  PLL 0 settings                         : 
-**                    PLL module                           : Enabled
-**                    PLL module in Stop                   : Disabled
-**                    PLL output [MHz]                     : 120
-**                    Reference clock divider              : Auto select
-**                    PLL reference clock [MHz]            : 4
 **                    Multiplication factor                : Auto select
 **                    Loss of lock interrupt               : Disabled
 **            Clock configurations                         : 3
