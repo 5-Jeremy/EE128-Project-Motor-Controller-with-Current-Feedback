@@ -58,7 +58,7 @@
       <File Name="Static_Code/PDD/FTM_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753736" FileType="1048576" />
       <File Name="Generated_Code/CsIO1.c" FileDate="2021-11-16, 13:12:14" FileAge="1637097134749" FileType="45637" CompNumb="3" />
       <File Name="Static_Code/PDD/PDD_Types.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753677" FileType="1048576" CompNumb="1" />
-      <File Name="Sources/main.c" FileDate="2021-11-23, 10:07:24" FileAge="1637690844078" FileType="128" />
+      <File Name="Sources/main.c" FileDate="2021-11-23, 15:34:33" FileAge="1637710473102" FileType="128" />
       <File Name="Static_Code/System/Peripherals_Init.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753659" FileType="1048576" CompNumb="1" />
       <File Name="Static_Code/PDD/PORT_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753782" FileType="1048576" />
       <File Name="Documentation/doxygen/TU1_component.txt" FileDate="2021-11-23, 09:27:26" FileAge="1637688446499" FileType="45637" CompNumb="7" />
@@ -71,7 +71,7 @@
       <File Name="Static_Code/PDD/SCB_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753803" FileType="1048576" />
       <File Name="Static_Code/PDD/FTFE_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753724" FileType="1048576" />
       <File Name="Static_Code/PDD/UART_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753826" FileType="1048576" />
-      <File Name="Generated_Code/CPU_Config.h" FileDate="2021-11-23, 10:07:31" FileAge="1637690851039" FileType="45637" CompNumb="1" />
+      <File Name="Generated_Code/CPU_Config.h" FileDate="2021-11-23, 15:35:03" FileAge="1637710503500" FileType="45637" CompNumb="1" />
       <File Name="ProjectInfo.xml" FileDate="2021-11-23, 09:27:26" FileAge="1637688446565" FileType="45637" />
       <File Name="Project_Settings/Startup_Code/startup.c" FileDate="2021-11-16, 13:05:53" FileAge="1637096753384" FileType="16384" CompNumb="1" />
       <File Name="Static_Code/PDD/PMC_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753778" FileType="1048576" />
@@ -100,17 +100,17 @@
       <File Name="Static_Code/PDD/WDOG_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753842" FileType="1048576" />
       <File Name="Static_Code/PDD/GPIO_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753736" FileType="1048576" />
       <File Name="Static_Code/PDD/OSC_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753757" FileType="1048576" />
-      <File Name="Documentation/doxygen/pex.doxyfile" FileDate="2021-11-16, 13:05:53" FileAge="1637096753857" FileType="45637" CompNumb="1" />
       <File Name="Static_Code/PDD/CAN_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753677" FileType="1048576" />
+      <File Name="Documentation/doxygen/pex.doxyfile" FileDate="2021-11-16, 13:05:53" FileAge="1637096753857" FileType="45637" CompNumb="1" />
       <File Name="Documentation/doxygen/Final_Project_project.txt" FileDate="2021-11-23, 09:27:26" FileAge="1637688446485" FileType="45637" CompNumb="1" />
       <File Name="Static_Code/PDD/SMC_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753815" FileType="1048576" />
       <File Name="Generated_Code/PE_Const.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753948" FileType="45637" />
       <File Name="Generated_Code/PwmLdd1.h" FileDate="2021-11-23, 09:27:26" FileAge="1637688446543" FileType="45637" CompNumb="6" />
       <File Name="Documentation/Final_Project.txt" FileDate="2021-11-23, 09:27:26" FileAge="1637688446471" FileType="3072" />
-      <File Name="Generated_Code/PwmLdd1.c" FileDate="2021-11-23, 09:27:26" FileAge="1637688446538" FileType="45637" CompNumb="6" />
-      <File Name="Static_Code/PDD/RCM_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753786" FileType="1048576" />
       <File Name="Static_Code/PDD/USBDCD_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753826" FileType="1048576" />
+      <File Name="Static_Code/PDD/RCM_PDD.h" FileDate="2021-11-16, 13:05:53" FileAge="1637096753786" FileType="1048576" />
+      <File Name="Generated_Code/PwmLdd1.c" FileDate="2021-11-23, 09:27:26" FileAge="1637688446538" FileType="45637" CompNumb="6" />
     </GeneratedByPE>
   </GeneratedFilesList>
-  <CodeGenReference>6</CodeGenReference>
+  <CodeGenReference>7</CodeGenReference>
 </CodeGenerationInfo>

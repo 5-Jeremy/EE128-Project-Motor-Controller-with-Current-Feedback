@@ -44,6 +44,8 @@
 #include "PDD_Includes.h"
 #include "Init_Config.h"
 /* User includes (#include below this line is not maintained by Processor Expert) */
+
+#define MAX_ERROR
 void software_delay(unsigned long delay)
 {
     while (delay > 0) delay--;
@@ -55,11 +57,19 @@ void PWM_Set_Duty_Cycle(unsigned char desired_duty_cycle_percent) {
 }
 unsigned short ADC_raw_val(void)
 {
-	//ADC0_SC1A = 0x1A; //Write to SC1A to start conversion from ADC_0
 	ADC0_SC1A = 0x00;
 	while(ADC0_SC2 & ADC_SC2_ADACT_MASK); // Conversion in progress
 	while(!(ADC0_SC1A & ADC_SC1_COCO_MASK));
 	return ADC0_RA;
+}
+unsigned short ADC_avg_val(void) {
+	char j;
+	unsigned long sum = 0;
+	for (j = 0; j < 16; ++j) {
+		sum += ADC_raw_val();
+	}
+	// Bit shifting to divide by 16, and subtract off the "zero current" value
+	return (sum >> 4) - 50000;
 }
 
 
@@ -91,29 +101,69 @@ int main(void)
 	// corresponds to 0.75 amps
 	const char motor_max_DC = 82;
 
+
+	PWM_Set_Duty_Cycle(35);
+
+	unsigned int set_point = 300;
+	char duty_cycle_limit = 80;
+
+	const float Kp = 0.005;
+	const float Kd = 0;
+	const float Ki = 0;
+	float last_error = 0;
+	float error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
+
+	while(1) {
+		char i;
+		unsigned short curr_error = set_point - ADC_avg_val();
+		float proportional = Kp * curr_error;
+		float derivative = Kd * (curr_error - last_error);
+		float integral = 0;
+		for (i = 0; i < 9; ++i) {
+			error_memory[i] = error_memory[i+1];
+			integral += error_memory[i];
+		}
+		// index 9 stores the most recent error
+		error_memory[9] = curr_error;
+		integral += curr_error;
+		integral = Ki * integral;
+
+		float PID_control = proportional + derivative + integral;
+
+		char* PID_control_value_string [100];
+		gcvt(PID_control, 6, PID_control_value_string);
+		printf("%s \n", PID_control_value_string);
+
+		software_delay(100000UL);
+	}
+
+/*
 	char i, j;
 	unsigned long sum;
-	for (i = 0; i < 64; ++i) {
+	for (i = motor_start_DC; i < motor_start_DC + 20; ++i) {
 		PWM_Set_Duty_Cycle(startup_pwm_DC  + i);
 		sum = 0;
 		for (j = 0; j < 16; ++j) {
 			sum += ADC_raw_val();
 		}
 		printf("%hu \n", sum >> 4 );
-		software_delay(500000UL);
+		software_delay(600000UL);
 	}
 
-
-	/*
+	software_delay(1000000UL);
+	*/
+/*
 	// Code for testing motor range
 	char i;
-	for (i = 0; i < 64; ++i) {
+	for (i = 10; i < 30; ++i) {
 		PWM_Set_Duty_Cycle(19 + i);
 		printf("%d",19 + i);
 		printf("\n");
-		software_delay(500000UL);
+		software_delay(800000UL);
 	}
-	*/
+*/
+	PWM_Set_Duty_Cycle(19);
+
 	while(1);
 
 
