@@ -44,6 +44,7 @@
 #include "PDD_Includes.h"
 #include "Init_Config.h"
 /* User includes (#include below this line is not maintained by Processor Expert) */
+
 void software_delay(unsigned long delay)
 {
     while (delay > 0) delay--;
@@ -61,6 +62,17 @@ unsigned short ADC_raw_val(void)
 	while(!(ADC0_SC1A & ADC_SC1_COCO_MASK));
 	return ADC0_RA;
 }
+
+
+
+
+void PORTB_IRQHandler(void) {
+//Duty cycle down to 19. 
+const char throttle_off = 19;
+PWM_Set_Duty_Cycle(throttle_off);
+PORTB_ISFR = (1 << 1);
+}
+
 
 
 
