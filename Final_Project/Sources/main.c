@@ -50,10 +50,9 @@ void software_delay(unsigned long delay)
 {
     while (delay > 0) delay--;
 }
-void PWM_Set_Duty_Cycle(unsigned char desired_duty_cycle_percent) {
-	unsigned char inverted_duty_cycle = 100 - desired_duty_cycle_percent;
-	//PWM1_SetRatio16((65535UL/100) * inverted_duty_cycle);
-	PWM1_SetRatio16(655 * inverted_duty_cycle);
+void PWM_Set_Duty_Cycle(float desired_duty_cycle_percent) {
+	float inverted_duty_cycle = 100.0 - desired_duty_cycle_percent;
+	PWM1_SetRatio16((uint16_t)(655.0 * inverted_duty_cycle));
 }
 unsigned short ADC_raw_val(void)
 {
@@ -101,9 +100,6 @@ int main(void)
 	// corresponds to 0.75 amps
 	const char motor_max_DC = 82;
 
-
-	PWM_Set_Duty_Cycle(35);
-
 	unsigned int set_point = 300;
 	char duty_cycle_limit = 80;
 
@@ -115,7 +111,8 @@ int main(void)
 
 	while(1) {
 		char i;
-		unsigned short curr_error = set_point - ADC_avg_val();
+		unsigned short curr_current = ADC_avg_val();
+		unsigned short curr_error = set_point - curr_current;
 		float proportional = Kp * curr_error;
 		float derivative = Kd * (curr_error - last_error);
 		float integral = 0;
@@ -132,9 +129,14 @@ int main(void)
 
 		char* PID_control_value_string [100];
 		gcvt(PID_control, 6, PID_control_value_string);
-		printf("%s \n", PID_control_value_string);
+		printf("-----------------------------");
+		printf("PID control value: %s \n", PID_control_value_string);
+		printf("Current feedback: %hu", curr_current);
+		printf("-----------------------------");
 
-		software_delay(100000UL);
+		PWM_Set_Duty_Cycle(motor_start_DC + PID_control);
+
+		software_delay(500000UL);
 	}
 
 /*
@@ -152,16 +154,7 @@ int main(void)
 
 	software_delay(1000000UL);
 	*/
-/*
-	// Code for testing motor range
-	char i;
-	for (i = 10; i < 30; ++i) {
-		PWM_Set_Duty_Cycle(19 + i);
-		printf("%d",19 + i);
-		printf("\n");
-		software_delay(800000UL);
-	}
-*/
+	// Throttle off
 	PWM_Set_Duty_Cycle(19);
 
 	while(1);
