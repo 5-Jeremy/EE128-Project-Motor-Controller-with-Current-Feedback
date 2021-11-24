@@ -61,14 +61,16 @@ unsigned short ADC_raw_val(void)
 	while(!(ADC0_SC1A & ADC_SC1_COCO_MASK));
 	return ADC0_RA;
 }
+// Not working
 unsigned short ADC_avg_val(void) {
 	char j;
 	unsigned long sum = 0;
 	for (j = 0; j < 16; ++j) {
-		sum += ADC_raw_val();
+		// subtract off the "zero current" value
+		sum += ADC_raw_val() - 50000;
 	}
-	// Bit shifting to divide by 16, and subtract off the "zero current" value
-	return (sum >> 4) - 50000;
+	// Bit shifting to divide by 16
+	return (sum >> 4);
 }
 
 
@@ -127,14 +129,21 @@ int main(void)
 
 		float PID_control = proportional + derivative + integral;
 
-		char* PID_control_value_string [100];
-		gcvt(PID_control, 6, PID_control_value_string);
-		printf("-----------------------------");
-		printf("PID control value: %s \n", PID_control_value_string);
-		printf("Current feedback: %hu", curr_current);
-		printf("-----------------------------");
+		float new_duty_cycle = motor_start_DC + PID_control;
 
-		PWM_Set_Duty_Cycle(motor_start_DC + PID_control);
+		// Establish an upper limit
+		if (new_duty_cycle > 60) {
+			PID_control = 60;
+		}
+
+		PWM_Set_Duty_Cycle(new_duty_cycle);
+
+		char* new_pwm_string [100];
+		gcvt(new_duty_cycle, 6, new_pwm_string);
+		printf("-----------------------------\n");
+		printf("Current feedback: %hu \n", curr_current);
+		printf("New duty cycle: %s \n", new_pwm_string);
+		printf("-----------------------------\n");
 
 		software_delay(500000UL);
 	}
