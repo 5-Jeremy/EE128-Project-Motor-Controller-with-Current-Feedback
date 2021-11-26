@@ -44,13 +44,16 @@
 #include "PDD_Includes.h"
 #include "Init_Config.h"
 /* User includes (#include below this line is not maintained by Processor Expert) */
+// Global flag for emergency brake
+unsigned char emergency_brake_active_flag;
 
-#define MAX_ERROR
 void software_delay(unsigned long delay)
 {
     while (delay > 0) delay--;
 }
 void PWM_Set_Duty_Cycle(float desired_duty_cycle_percent) {
+	if (emergency_brake_active_flag)
+		return;
 	float inverted_duty_cycle = 100.0 - desired_duty_cycle_percent;
 	PWM1_SetRatio16((uint16_t)(655.0 * inverted_duty_cycle));
 }
@@ -61,7 +64,6 @@ unsigned short ADC_raw_val(void)
 	while(!(ADC0_SC1A & ADC_SC1_COCO_MASK));
 	return ADC0_RA;
 }
-// Not working
 unsigned short ADC_avg_val(void) {
 	char j;
 	unsigned long sum = 0;
@@ -80,7 +82,14 @@ unsigned short ADC_avg_val(void) {
 	}
 	//return (unsigned short)(sum >> 4);
 }
-
+// Interrupt Service Routine for emergency break
+void PORTB_IRQHandler(void) {
+	//Duty cycle down to 19.
+	const float throttle_off = 19;
+	PWM_Set_Duty_Cycle(throttle_off);
+	emergency_brake_active_flag = 1;
+	PORTB_ISFR = (1 << 1);
+}
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
@@ -93,18 +102,26 @@ int main(void)
   /*** End of Processor Expert internal initialization.                    ***/
 
   /* Write your code here */
-  // Setup
+  // Setup required for ADC
   SIM_SCGC6 |= SIM_SCGC6_ADC0_MASK; // 0x8000000u; Enable ADC0 Clock
   ADC0_CFG1 = 0x0C; // 16bits ADC; Bus Clock
   ADC0_SC1A = 0x1F; // Disable the module, ADCH = 11111
+  // Setup required for emergency break
+  SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
+  PORTB_PCR2 = 0xC0100; // Interrupt on rising edge on port B pin 2
+  GPIOB_PDDR &= 0xFFFFFFFB;
+  PORTB_ISFR = (1 << 1);
+  // 60 corresponds to PORTB_IRQn
+  NVIC_EnableIRQ(60);
+  emergency_brake_active_flag = 0;
 
-  printf("-----------------------------\n");
+  printf("\n-----------------------------\n");
   printf("*****************************\n");
   printf("-----------------------------\n");
 
   char i;
 
-	// Send a 19% duty cycle signal on start-up to set it as minimum throttle
+	// Send a 19% duty cycle signal on start-up
 	const char startup_pwm_DC = 19;
 	PWM_Set_Duty_Cycle(startup_pwm_DC);
 	software_delay(100000UL);
@@ -131,6 +148,14 @@ int main(void)
 	float error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
 
 	while(1) {
+
+		if (emergency_brake_active_flag) {
+			printf("Emergency brake is active\n");
+			for (i = 0; i < 20; ++i) {
+				software_delay(1000000UL);
+			}
+		}
+
 		unsigned short curr_current = ADC_avg_val();
 		// Needs to be a signed value
 		short curr_error = set_point - curr_current;
