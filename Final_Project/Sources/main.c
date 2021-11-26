@@ -66,11 +66,19 @@ unsigned short ADC_avg_val(void) {
 	char j;
 	unsigned long sum = 0;
 	for (j = 0; j < 16; ++j) {
-		// subtract off the "zero current" value
-		sum += ADC_raw_val() - 50000;
+		unsigned short curr = ADC_raw_val();
+		sum += curr;
 	}
 	// Bit shifting to divide by 16
-	return (sum >> 4);
+	sum = sum >> 4;
+	// TODO: find a more accurate value to replace 49000
+	if (sum > 49000UL) {
+		return (unsigned short)(sum - 49000UL);
+	}
+	else {
+		return 0;
+	}
+	//return (unsigned short)(sum >> 4);
 }
 
 
@@ -90,6 +98,12 @@ int main(void)
   ADC0_CFG1 = 0x0C; // 16bits ADC; Bus Clock
   ADC0_SC1A = 0x1F; // Disable the module, ADCH = 11111
 
+  printf("-----------------------------\n");
+  printf("*****************************\n");
+  printf("-----------------------------\n");
+
+  char i;
+
 	// Send a 19% duty cycle signal on start-up to set it as minimum throttle
 	const char startup_pwm_DC = 19;
 	PWM_Set_Duty_Cycle(startup_pwm_DC);
@@ -99,22 +113,27 @@ int main(void)
 		// corresponds to 0.18 amps
 	const char motor_start_DC = 30;
 	// Highest duty cycle at which the motor increases in speed
-	// corresponds to 0.75 amps
 	const char motor_max_DC = 82;
 
-	unsigned int set_point = 300;
-	char duty_cycle_limit = 80;
+	// Start-up motor
+	PWM_Set_Duty_Cycle(motor_start_DC);
+	software_delay(5000000UL);
 
-	const float Kp = 0.005;
+	unsigned long set_point = 1500;
+	float duty_cycle;
+	float duty_cycle_limit = 80;
+
+
+	const float Kp = 0.05; // 0.005 is too slow
 	const float Kd = 0;
 	const float Ki = 0;
 	float last_error = 0;
 	float error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
 
 	while(1) {
-		char i;
 		unsigned short curr_current = ADC_avg_val();
-		unsigned short curr_error = set_point - curr_current;
+		// Needs to be a signed value
+		short curr_error = set_point - curr_current;
 		float proportional = Kp * curr_error;
 		float derivative = Kd * (curr_error - last_error);
 		float integral = 0;
@@ -126,20 +145,20 @@ int main(void)
 		error_memory[9] = curr_error;
 		integral += curr_error;
 		integral = Ki * integral;
-
+		// The control signal from the PID controller
 		float PID_control = proportional + derivative + integral;
 
-		float new_duty_cycle = motor_start_DC + PID_control;
+		duty_cycle = duty_cycle + PID_control;
 
 		// Establish an upper limit
-		if (new_duty_cycle > 60) {
-			PID_control = 60;
+		if (duty_cycle > duty_cycle_limit) {
+			duty_cycle = duty_cycle_limit;
 		}
 
-		PWM_Set_Duty_Cycle(new_duty_cycle);
+		PWM_Set_Duty_Cycle(duty_cycle);
 
 		char* new_pwm_string [100];
-		gcvt(new_duty_cycle, 6, new_pwm_string);
+		gcvt(duty_cycle, 6, new_pwm_string);
 		printf("-----------------------------\n");
 		printf("Current feedback: %hu \n", curr_current);
 		printf("New duty cycle: %s \n", new_pwm_string);
@@ -158,11 +177,11 @@ int main(void)
 			sum += ADC_raw_val();
 		}
 		printf("%hu \n", sum >> 4 );
-		software_delay(600000UL);
+		software_delay(6000000UL);
 	}
-
+*/
 	software_delay(1000000UL);
-	*/
+
 	// Throttle off
 	PWM_Set_Duty_Cycle(19);
 
