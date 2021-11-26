@@ -19,7 +19,7 @@
         <Line>PE_Const</Line>
         <Line>IO_Map</Line>
       </GenSharedModules>
-      <ShrdHeaderAge0>1400327021</ShrdHeaderAge0>
+      <ShrdHeaderAge0>1400481611</ShrdHeaderAge0>
       <ShrdCodeAge0>-1</ShrdCodeAge0>
       <ShrdAsemblAge0>-1</ShrdAsemblAge0>
       <ShrdHeaderAge1>1399875770</ShrdHeaderAge1>
@@ -49,12 +49,12 @@
       </GenExtraFiles>
       <GenExtraFileSrcDir13>Repositories\lib\doxygen\</GenExtraFileSrcDir13>
       <GenExtraFileSrcDir6>lib\Kinetis\startup\</GenExtraFileSrcDir6>
-      <XtraAge3>1400327021</XtraAge3>
-      <XtraAge4>1400327021</XtraAge4>
+      <XtraAge3>1400481611</XtraAge3>
+      <XtraAge4>1400481611</XtraAge4>
       <XtraAge6>1399875770</XtraAge6>
-      <XtraAge7>1400327021</XtraAge7>
-      <XtraAge8>1400471028</XtraAge8>
-      <XtraAge9>1400328432</XtraAge9>
+      <XtraAge7>1400482912</XtraAge7>
+      <XtraAge8>1400482907</XtraAge8>
+      <XtraAge9>1400482912</XtraAge9>
       <GenExtraFileType13>5</GenExtraFileType13>
       <GenExtraFileType12>4</GenExtraFileType12>
       <GenExtraFileType11>4</GenExtraFileType11>
@@ -525,7 +525,7 @@
     </GenFiles>
     <SignalListFile />
     <DestinationCompiler>GNUC</DestinationCompiler>
-    <ProjectModificationStamp>5</ProjectModificationStamp>
+    <ProjectModificationStamp>9</ProjectModificationStamp>
   </Options>
   <CpuID_1>
     <Generated>true</Generated>
@@ -534,7 +534,7 @@
     <GenDriverVersion>01.00</GenDriverVersion>
     <GenEventModule>Events</GenEventModule>
     <HeaderAge>1399875770</HeaderAge>
-    <CodeAge>1400327021</CodeAge>
+    <CodeAge>1400482912</CodeAge>
     <AsemblAge>-1</AsemblAge>
     <GenNumMethods>10</GenNumMethods>
     <SetClockConfiguration>true</SetClockConfiguration>

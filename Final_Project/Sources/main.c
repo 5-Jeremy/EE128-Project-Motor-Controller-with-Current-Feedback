@@ -44,6 +44,13 @@
 #include "PDD_Includes.h"
 #include "Init_Config.h"
 /* User includes (#include below this line is not maintained by Processor Expert) */
+#define MILLIVOLTS_PER_BIT 0.05035
+#define MILLIAMPS_PER_MILLIVOLT 25
+#define MILLIAMPS_PER_BIT 1.25881
+// milliamps per bit = 1.25881
+// With no current, the ADC reads around 49843 = 2.51 volts
+	//
+
 // Global flag for emergency brake
 unsigned char emergency_brake_active_flag;
 
@@ -74,8 +81,8 @@ unsigned short ADC_avg_val(void) {
 	// Bit shifting to divide by 16
 	sum = sum >> 4;
 	// TODO: find a more accurate value to replace 49000
-	if (sum > 49000UL) {
-		return (unsigned short)(sum - 49000UL);
+	if (sum > 49800UL) {
+		return (unsigned short)(sum - 49800UL);
 	}
 	else {
 		return 0;
@@ -83,6 +90,7 @@ unsigned short ADC_avg_val(void) {
 	//return (unsigned short)(sum >> 4);
 }
 // Interrupt Service Routine for emergency break
+/*
 void PORTB_IRQHandler(void) {
 	//Duty cycle down to 19.
 	const float throttle_off = 19;
@@ -90,7 +98,7 @@ void PORTB_IRQHandler(void) {
 	emergency_brake_active_flag = 1;
 	PORTB_ISFR = (1 << 1);
 }
-
+*/
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
@@ -108,12 +116,10 @@ int main(void)
   ADC0_SC1A = 0x1F; // Disable the module, ADCH = 11111
   // Setup required for emergency break
   SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
-  PORTB_PCR2 = 0xC0100; // Interrupt on rising edge on port B pin 2
+  PORTB_PCR2 = 0x100; // Interrupt on rising edge on port B pin 2
   GPIOB_PDDR &= 0xFFFFFFFB;
-  PORTB_ISFR = (1 << 1);
-  // 60 corresponds to PORTB_IRQn
-  NVIC_EnableIRQ(60);
-  emergency_brake_active_flag = 0;
+  //PORTB_ISFR = (1 << 1);
+  //emergency_brake_active_flag = 0;
 
   printf("\n-----------------------------\n");
   printf("*****************************\n");
@@ -124,36 +130,36 @@ int main(void)
 	// Send a 19% duty cycle signal on start-up
 	const char startup_pwm_DC = 19;
 	PWM_Set_Duty_Cycle(startup_pwm_DC);
-	software_delay(100000UL);
+	software_delay(5000000UL);
 
 	// Lowest duty cycle that gets the motor to spin
-		// corresponds to 0.18 amps
 	const char motor_start_DC = 30;
-	// Highest duty cycle at which the motor increases in speed
-	const char motor_max_DC = 82;
 
 	// Start-up motor
 	PWM_Set_Duty_Cycle(motor_start_DC);
 	software_delay(5000000UL);
 
-	unsigned long set_point = 1500;
+	unsigned long set_point = 400;
 	float duty_cycle;
-	float duty_cycle_limit = 80;
+	float duty_cycle_upper_limit = 80;
+	float duty_cycle_lower_limit = 19;
 
-
-	const float Kp = 0.05; // 0.005 is too slow
-	const float Kd = 0;
+	const float Kp = 0.025; // 0.005 is too slow
+	const float Kd = 0.015;
 	const float Ki = 0;
 	float last_error = 0;
 	float error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
 
 	while(1) {
 
-		if (emergency_brake_active_flag) {
+		// Non-interrupt solution to emergency brake
+		if ((GPIOB_PDIR & 0x00000004) == 0) {
 			printf("Emergency brake is active\n");
-			for (i = 0; i < 20; ++i) {
-				software_delay(1000000UL);
-			}
+			PWM_Set_Duty_Cycle(startup_pwm_DC);
+			while(1);
+			//for (i = 0; i < 20; ++i) {
+			//	software_delay(1000000UL);
+			//}
 		}
 
 		unsigned short curr_current = ADC_avg_val();
@@ -161,6 +167,7 @@ int main(void)
 		short curr_error = set_point - curr_current;
 		float proportional = Kp * curr_error;
 		float derivative = Kd * (curr_error - last_error);
+		last_error = curr_error;
 		float integral = 0;
 		for (i = 0; i < 9; ++i) {
 			error_memory[i] = error_memory[i+1];
@@ -175,9 +182,12 @@ int main(void)
 
 		duty_cycle = duty_cycle + PID_control;
 
-		// Establish an upper limit
-		if (duty_cycle > duty_cycle_limit) {
-			duty_cycle = duty_cycle_limit;
+		// Establish upper and lower limits
+		if (duty_cycle > duty_cycle_upper_limit) {
+			duty_cycle = duty_cycle_upper_limit;
+		}
+		else if (duty_cycle < duty_cycle_lower_limit) {
+			duty_cycle = duty_cycle_lower_limit;
 		}
 
 		PWM_Set_Duty_Cycle(duty_cycle);
@@ -189,7 +199,7 @@ int main(void)
 		printf("New duty cycle: %s \n", new_pwm_string);
 		printf("-----------------------------\n");
 
-		software_delay(500000UL);
+		software_delay(2500000UL);
 	}
 
 /*
