@@ -74,13 +74,13 @@ unsigned short ADC_raw_val(void)
 unsigned short ADC_avg_val(void) {
 	char j;
 	unsigned long sum = 0;
-	for (j = 0; j < 16; ++j) {
+	for (j = 0; j < 32; ++j) {
 		unsigned short curr = ADC_raw_val();
 		sum += curr;
 	}
 	// Bit shifting to divide by 16
-	sum = sum >> 4;
-	// TODO: find a more accurate value to replace 49000
+	sum = sum >> 5;
+	// TODO: find a more accurate value to replace 49800
 	if (sum > 49800UL) {
 		return (unsigned short)(sum - 49800UL);
 	}
@@ -139,28 +139,26 @@ int main(void)
 	PWM_Set_Duty_Cycle(motor_start_DC);
 	software_delay(5000000UL);
 
-	int set_point = 400;
+	int set_point = 800;
 	float duty_cycle;
 	float duty_cycle_upper_limit = 80;
 	float duty_cycle_lower_limit = 30;
 
+	// With this configuration, can get the error to stay within +/- 50 most of the time
+		// This corresponds to approximately +/- 63 mA
 	float Kp = 0.001;
-	float Kd = 0.003;
-	float Ki = 0;
+	float Kd = 0.002;
+	float Ki = 0.0001;
 	float last_error = set_point/2; // initialize to this for less of an early boost
 	float error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
-	float deadband = 50; // Do not change the duty cycle if the error is within +/- this amount
 
 	while(1) {
 
 		// Non-interrupt solution to emergency brake
 		if ((GPIOB_PDIR & 0x00000004) == 0) {
 			printf("Emergency brake is active\n");
-			Kp = 0;
-			Kd = 0;
-			Ki = 0;
-			//PWM_Set_Duty_Cycle(startup_pwm_DC);
-			//while(1);
+			PWM_Set_Duty_Cycle(startup_pwm_DC);
+			while(1);
 
 			//for (i = 0; i < 20; ++i) {
 			//	software_delay(1000000UL);
@@ -174,11 +172,11 @@ int main(void)
 		float derivative = Kd * (curr_error - last_error);
 		// Limit how much the derivative term can react to a rapid
 		// change in the amount of error to avoid overcompensation
-		if (derivative > 3) {
-			derivative = 3;
+		if (derivative > 0.1) {
+			derivative = 0.1;
 		}
-		if (derivative < -3) {
-			derivative = -3;
+		if (derivative < -0.1) {
+			derivative = -0.1;
 		}
 		last_error = curr_error;
 		float integral = 0;
@@ -193,9 +191,7 @@ int main(void)
 		// The control signal from the PID controller
 		float PID_control = proportional + derivative + integral;
 
-		if (curr_error > deadband || curr_error < -1*deadband) {
-			duty_cycle = duty_cycle + PID_control;
-		}
+		duty_cycle = duty_cycle + PID_control;
 
 		// Establish upper and lower limits
 		if (duty_cycle > duty_cycle_upper_limit) {
@@ -205,15 +201,25 @@ int main(void)
 			duty_cycle = duty_cycle_lower_limit;
 		}
 
-		PWM_Set_Duty_Cycle(duty_cycle);
+		//PWM_Set_Duty_Cycle(duty_cycle);
+		PWM_Set_Duty_Cycle(44);
 
-		char* new_err_string [100];
+		char* new_err_string [50];
 		gcvt(curr_error, 6, new_err_string);
-		char* new_pwm_string [100];
+		char* new_prop_string [50];
+		gcvt(proportional, 6, new_prop_string);
+		char* new_der_string [50];
+		gcvt(derivative, 6, new_der_string);
+		char* new_int_string [50];
+		gcvt(integral, 6, new_int_string);
+		char* new_pwm_string [50];
 		gcvt(duty_cycle, 6, new_pwm_string);
 		printf("-----------------------------\n");
 		printf("Current feedback: %hu \n", curr_current);
 		printf("Error: %s \n", new_err_string);
+		printf("Proportional: %s \n", new_prop_string);
+		printf("Derivative: %s \n", new_der_string);
+		printf("Integral: %s \n", new_int_string);
 		printf("New duty cycle: %s \n", new_pwm_string);
 		printf("-----------------------------\n");
 
