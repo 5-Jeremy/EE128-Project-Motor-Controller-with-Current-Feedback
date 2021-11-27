@@ -139,24 +139,29 @@ int main(void)
 	PWM_Set_Duty_Cycle(motor_start_DC);
 	software_delay(5000000UL);
 
-	unsigned long set_point = 400;
+	int set_point = 400;
 	float duty_cycle;
 	float duty_cycle_upper_limit = 80;
-	float duty_cycle_lower_limit = 19;
+	float duty_cycle_lower_limit = 30;
 
-	const float Kp = 0.025; // 0.005 is too slow
-	const float Kd = 0.015;
-	const float Ki = 0;
-	float last_error = 0;
+	float Kp = 0.001;
+	float Kd = 0.003;
+	float Ki = 0;
+	float last_error = set_point/2; // initialize to this for less of an early boost
 	float error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
+	float deadband = 50; // Do not change the duty cycle if the error is within +/- this amount
 
 	while(1) {
 
 		// Non-interrupt solution to emergency brake
 		if ((GPIOB_PDIR & 0x00000004) == 0) {
 			printf("Emergency brake is active\n");
-			PWM_Set_Duty_Cycle(startup_pwm_DC);
-			while(1);
+			Kp = 0;
+			Kd = 0;
+			Ki = 0;
+			//PWM_Set_Duty_Cycle(startup_pwm_DC);
+			//while(1);
+
 			//for (i = 0; i < 20; ++i) {
 			//	software_delay(1000000UL);
 			//}
@@ -164,9 +169,17 @@ int main(void)
 
 		unsigned short curr_current = ADC_avg_val();
 		// Needs to be a signed value
-		short curr_error = set_point - curr_current;
+		float curr_error = set_point - curr_current;
 		float proportional = Kp * curr_error;
 		float derivative = Kd * (curr_error - last_error);
+		// Limit how much the derivative term can react to a rapid
+		// change in the amount of error to avoid overcompensation
+		if (derivative > 3) {
+			derivative = 3;
+		}
+		if (derivative < -3) {
+			derivative = -3;
+		}
 		last_error = curr_error;
 		float integral = 0;
 		for (i = 0; i < 9; ++i) {
@@ -180,7 +193,9 @@ int main(void)
 		// The control signal from the PID controller
 		float PID_control = proportional + derivative + integral;
 
-		duty_cycle = duty_cycle + PID_control;
+		if (curr_error > deadband || curr_error < -1*deadband) {
+			duty_cycle = duty_cycle + PID_control;
+		}
 
 		// Establish upper and lower limits
 		if (duty_cycle > duty_cycle_upper_limit) {
@@ -192,14 +207,17 @@ int main(void)
 
 		PWM_Set_Duty_Cycle(duty_cycle);
 
+		char* new_err_string [100];
+		gcvt(curr_error, 6, new_err_string);
 		char* new_pwm_string [100];
 		gcvt(duty_cycle, 6, new_pwm_string);
 		printf("-----------------------------\n");
 		printf("Current feedback: %hu \n", curr_current);
+		printf("Error: %s \n", new_err_string);
 		printf("New duty cycle: %s \n", new_pwm_string);
 		printf("-----------------------------\n");
 
-		software_delay(2500000UL);
+		software_delay(1000000UL);
 	}
 
 /*
