@@ -44,13 +44,23 @@
 #include "PDD_Includes.h"
 #include "Init_Config.h"
 /* User includes (#include below this line is not maintained by Processor Expert) */
+/************* Defined Constants *************/
+// milliamps per bit = 1.25881
+// With no current, the ADC reads around 49843 = 2.51 volts
 #define MILLIVOLTS_PER_BIT 0.05035
 #define MILLIAMPS_PER_MILLIVOLT 25
 #define MILLIAMPS_PER_BIT 1.25881
-// milliamps per bit = 1.25881
-// With no current, the ADC reads around 49843 = 2.51 volts
-	//
-
+#define STARTUP_PWM_DC 19
+// Lowest duty cycle that gets the motor to spin
+#define MOTOR_START_DC 30
+// Limit on the duty cycle that the ESC can run the motor at
+#define DC_UPPER_LIMIT 80
+/************* Global Variables *************/
+const float Kp = 0.001;
+const float Kd = 0.002;
+const float Ki = 0.0001;
+float last_error = 0;
+float error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
 // Global flag for emergency brake
 unsigned char emergency_brake_active_flag;
 
@@ -80,14 +90,72 @@ unsigned short ADC_avg_val(void) {
 	}
 	// Bit shifting to divide by 16
 	sum = sum >> 5;
-	// TODO: find a more accurate value to replace 49800
-	if (sum > 49800UL) {
-		return (unsigned short)(sum - 49800UL);
+	// 49843 corresponds to approximately 0 amps
+	if (sum > 49843UL) {
+		return (unsigned short)(sum - 49843UL);
 	}
 	else {
 		return 0;
 	}
-	//return (unsigned short)(sum >> 4);
+}
+void Check_Emergency_Break() {
+	// Non-interrupt solution to emergency brake
+	if ((GPIOB_PDIR & 0x00000004) == 0) {
+		printf("Emergency brake is active\n");
+		PWM_Set_Duty_Cycle(STARTUP_PWM_DC);
+		while(1);
+	}
+}
+void PID_Loop() {
+	unsigned short curr_current = ADC_avg_val();
+	// Needs to be a signed value
+	float curr_error = set_point - curr_current;
+	float proportional = Kp * curr_error;
+	float derivative = Kd * (curr_error - last_error);
+	// Limit how much the derivative term can react to a rapid
+	// change in the amount of error to avoid overcompensation
+	if (derivative > 0.1) {
+		derivative = 0.1;
+	}
+	if (derivative < -0.1) {
+		derivative = -0.1;
+	}
+	last_error = curr_error;
+	char i;
+	float integral = 0;
+	for (i = 0; i < 9; ++i) {
+		error_memory[i] = error_memory[i+1];
+		integral += error_memory[i];
+	}
+	// index 9 stores the most recent error
+	error_memory[9] = curr_error;
+	integral += curr_error;
+	integral = Ki * integral;
+	// The control signal from the PID controller
+	float PID_control = proportional + derivative + integral;
+
+	duty_cycle = duty_cycle + PID_control;
+
+	// Establish upper and lower limits
+	if (duty_cycle > DC_UPPER_LIMIT) {
+		duty_cycle = DC_UPPER_LIMIT;
+	}
+	else if (duty_cycle < MOTOR_START_DC) {
+		duty_cycle = MOTOR_START_DC;
+	}
+
+	PWM_Set_Duty_Cycle(duty_cycle);
+}
+void Update_UI() {
+	char* new_err_string [50];
+	gcvt(curr_error, 6, new_err_string);
+	char* new_pwm_string [50];
+	gcvt(duty_cycle, 6, new_pwm_string);
+	printf("-----------------------------\n");
+	printf("Current feedback: %hu \n", curr_current);
+	printf("Error: %s \n", new_err_string);
+	printf("New duty cycle: %s \n", new_pwm_string);
+	printf("-----------------------------\n");
 }
 // Interrupt Service Routine for emergency break
 /*
@@ -125,125 +193,45 @@ int main(void)
   printf("*****************************\n");
   printf("-----------------------------\n");
 
-  char i;
-
 	// Send a 19% duty cycle signal on start-up
-	const char startup_pwm_DC = 19;
-	PWM_Set_Duty_Cycle(startup_pwm_DC);
+	PWM_Set_Duty_Cycle(STARTUP_PWM_DC);
 	software_delay(5000000UL);
-
-	// Lowest duty cycle that gets the motor to spin
-	const char motor_start_DC = 30;
 
 	// Start-up motor
-	PWM_Set_Duty_Cycle(motor_start_DC);
+	PWM_Set_Duty_Cycle(MOTOR_START_DC);
 	software_delay(5000000UL);
 
-	int set_point = 800;
+	// set_point cannot go above 800
+	int set_point = 400;
 	float duty_cycle;
-	float duty_cycle_upper_limit = 80;
-	float duty_cycle_lower_limit = 30;
-
-	// With this configuration, can get the error to stay within +/- 50 most of the time
-		// This corresponds to approximately +/- 63 mA
-	float Kp = 0.001;
-	float Kd = 0.002;
-	float Ki = 0.0001;
-	float last_error = set_point/2; // initialize to this for less of an early boost
-	float error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
 
 	while(1) {
-
-		// Non-interrupt solution to emergency brake
-		if ((GPIOB_PDIR & 0x00000004) == 0) {
-			printf("Emergency brake is active\n");
-			PWM_Set_Duty_Cycle(startup_pwm_DC);
-			while(1);
-
-			//for (i = 0; i < 20; ++i) {
-			//	software_delay(1000000UL);
-			//}
-		}
-
-		unsigned short curr_current = ADC_avg_val();
-		// Needs to be a signed value
-		float curr_error = set_point - curr_current;
-		float proportional = Kp * curr_error;
-		float derivative = Kd * (curr_error - last_error);
-		// Limit how much the derivative term can react to a rapid
-		// change in the amount of error to avoid overcompensation
-		if (derivative > 0.1) {
-			derivative = 0.1;
-		}
-		if (derivative < -0.1) {
-			derivative = -0.1;
-		}
-		last_error = curr_error;
-		float integral = 0;
-		for (i = 0; i < 9; ++i) {
-			error_memory[i] = error_memory[i+1];
-			integral += error_memory[i];
-		}
-		// index 9 stores the most recent error
-		error_memory[9] = curr_error;
-		integral += curr_error;
-		integral = Ki * integral;
-		// The control signal from the PID controller
-		float PID_control = proportional + derivative + integral;
-
-		duty_cycle = duty_cycle + PID_control;
-
-		// Establish upper and lower limits
-		if (duty_cycle > duty_cycle_upper_limit) {
-			duty_cycle = duty_cycle_upper_limit;
-		}
-		else if (duty_cycle < duty_cycle_lower_limit) {
-			duty_cycle = duty_cycle_lower_limit;
-		}
-
-		//PWM_Set_Duty_Cycle(duty_cycle);
-		PWM_Set_Duty_Cycle(44);
-
-		char* new_err_string [50];
-		gcvt(curr_error, 6, new_err_string);
-		char* new_prop_string [50];
-		gcvt(proportional, 6, new_prop_string);
-		char* new_der_string [50];
-		gcvt(derivative, 6, new_der_string);
-		char* new_int_string [50];
-		gcvt(integral, 6, new_int_string);
-		char* new_pwm_string [50];
-		gcvt(duty_cycle, 6, new_pwm_string);
-		printf("-----------------------------\n");
-		printf("Current feedback: %hu \n", curr_current);
-		printf("Error: %s \n", new_err_string);
-		printf("Proportional: %s \n", new_prop_string);
-		printf("Derivative: %s \n", new_der_string);
-		printf("Integral: %s \n", new_int_string);
-		printf("New duty cycle: %s \n", new_pwm_string);
-		printf("-----------------------------\n");
-
+		Check_Emergency_Break();
+		PID_Loop();
+		Update_UI();
 		software_delay(1000000UL);
 	}
 
 /*
-	char i, j;
+	char j;
 	unsigned long sum;
-	for (i = motor_start_DC; i < motor_start_DC + 20; ++i) {
-		PWM_Set_Duty_Cycle(startup_pwm_DC  + i);
+	for (i = 30; i < 30 + 20; ++i) {
+		PWM_Set_Duty_Cycle(i);
+
 		sum = 0;
 		for (j = 0; j < 16; ++j) {
 			sum += ADC_raw_val();
 		}
 		printf("%hu \n", sum >> 4 );
-		software_delay(6000000UL);
+
+		software_delay(9000000UL);
 	}
-*/
+
 	software_delay(1000000UL);
 
 	// Throttle off
-	PWM_Set_Duty_Cycle(19);
-
+	PWM_Set_Duty_Cycle(STARTUP_PWM_DC);
+*/
 	while(1);
 
 
