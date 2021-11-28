@@ -55,7 +55,14 @@
 #define MOTOR_START_DC 30
 // Limit on the duty cycle that the ESC can run the motor at
 #define DC_UPPER_LIMIT 80
+// Limits on what the user can choose as the set point
+#define MAX_SETPOINT 800
+#define MIN_SETPOINT 0
 /************* Global Variables *************/
+float duty_cycle = MOTOR_START_DC;
+unsigned short curr_current = 0;
+float curr_error = 0;
+int set_point = 0;
 const float Kp = 0.001;
 const float Kd = 0.002;
 const float Ki = 0.0001;
@@ -98,7 +105,7 @@ unsigned short ADC_avg_val(void) {
 		return 0;
 	}
 }
-void Check_Emergency_Break() {
+void Check_Emergency_Brake() {
 	// Non-interrupt solution to emergency brake
 	if ((GPIOB_PDIR & 0x00000004) == 0) {
 		printf("Emergency brake is active\n");
@@ -107,9 +114,9 @@ void Check_Emergency_Break() {
 	}
 }
 void PID_Loop() {
-	unsigned short curr_current = ADC_avg_val();
+	curr_current = ADC_avg_val();
 	// Needs to be a signed value
-	float curr_error = set_point - curr_current;
+	curr_error = set_point - curr_current;
 	float proportional = Kp * curr_error;
 	float derivative = Kd * (curr_error - last_error);
 	// Limit how much the derivative term can react to a rapid
@@ -157,6 +164,16 @@ void Update_UI() {
 	printf("New duty cycle: %s \n", new_pwm_string);
 	printf("-----------------------------\n");
 }
+int Get_New_Setpoint() {
+	int new_setpoint;
+	scanf("%d", &new_setpoint);
+	if(new_setpoint < MIN_SETPOINT || new_setpoint > MAX_SETPOINT) {
+		printf("New setpoint is not valid");
+		return -1;
+	}
+	else
+		return new_setpoint;
+}
 // Interrupt Service Routine for emergency break
 /*
 void PORTB_IRQHandler(void) {
@@ -201,12 +218,20 @@ int main(void)
 	PWM_Set_Duty_Cycle(MOTOR_START_DC);
 	software_delay(5000000UL);
 
-	// set_point cannot go above 800
-	int set_point = 400;
-	float duty_cycle;
-
 	while(1) {
-		Check_Emergency_Break();
+		Check_Emergency_Brake();
+		// This code waits for there to be exactly 5 characters on the receive buffer (4 digits + the newline)
+		// and then calls scanf() so that the data is read all at one time and there is no extra delay
+		// This will be replaced with code that reads a character each time a new one is typed by the user
+		// and fills an array with the characters until a newline is received, and then determines the new
+		// setpoint from the characters in the array
+		if (UART0_RCFIFO >= 5) {
+			int new_setpoint = Get_New_Setpoint();
+			if (new_setpoint != -1) {
+				set_point = new_setpoint;
+				printf("Set point updated: %d\n", set_point);
+			}
+		}
 		PID_Loop();
 		Update_UI();
 		software_delay(1000000UL);
