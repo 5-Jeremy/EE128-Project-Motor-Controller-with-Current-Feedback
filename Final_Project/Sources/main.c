@@ -57,7 +57,6 @@
 #define DC_UPPER_LIMIT 80
 // Limits on what the user can choose as the set point
 #define MAX_SETPOINT 800
-#define MIN_SETPOINT 0
 /************* Global Variables *************/
 float duty_cycle = MOTOR_START_DC;
 unsigned short curr_current = 0;
@@ -68,8 +67,6 @@ const float Kd = 0.002;
 const float Ki = 0.0001;
 float last_error = 0;
 float error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
-// Global flag for emergency brake
-unsigned char emergency_brake_active_flag;
 
 void software_delay(unsigned long delay)
 {
@@ -164,26 +161,41 @@ void Update_UI() {
 	printf("New duty cycle: %s \n", new_pwm_string);
 	printf("-----------------------------\n");
 }
-int Get_New_Setpoint() {
-	int new_setpoint;
-	scanf("%d", &new_setpoint);
-	if(new_setpoint < MIN_SETPOINT || new_setpoint > MAX_SETPOINT) {
-		printf("New setpoint is not valid");
-		return -1;
+void Get_Digit() {
+	static int input = 0;
+	char digit = UART0_D;
+	// Only positive integers are accepted, so ignore any input
+	// that is not a valid digit or newline character
+	if (digit == 13) {
+		// If newline is recieved, take the integer obtained from the user
+		// and make it the new setpoint
+		set_point = input;
+		input = 0;
+		printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		printf("Set point changed: %d\n", set_point);
+		printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		software_delay(4000000UL);
 	}
-	else
-		return new_setpoint;
+	else if (digit >= '0' && digit <= '9') {
+		// If digit is received, add it to the current user input and check that
+		// the input does not exceed the maximum allowed set point
+		input = (input * 10) + (digit - 48);
+		if (input > MAX_SETPOINT) {
+			printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+			printf("User input exceeds maximum allowable set point\n");
+			printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+			software_delay(4000000UL);
+			input = 0;
+			return;
+		}
+	}
+	else {
+		printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		printf("Invalid character received\n");
+		printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		software_delay(4000000UL);
+	}
 }
-// Interrupt Service Routine for emergency break
-/*
-void PORTB_IRQHandler(void) {
-	//Duty cycle down to 19.
-	const float throttle_off = 19;
-	PWM_Set_Duty_Cycle(throttle_off);
-	emergency_brake_active_flag = 1;
-	PORTB_ISFR = (1 << 1);
-}
-*/
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
@@ -203,8 +215,9 @@ int main(void)
   SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
   PORTB_PCR2 = 0x100; // Interrupt on rising edge on port B pin 2
   GPIOB_PDDR &= 0xFFFFFFFB;
-  //PORTB_ISFR = (1 << 1);
-  //emergency_brake_active_flag = 0;
+  // Flush UART receive buffer
+  while (UART0_RCFIFO > 0)
+	  UART0_D;
 
   printf("\n-----------------------------\n");
   printf("*****************************\n");
@@ -220,45 +233,13 @@ int main(void)
 
 	while(1) {
 		Check_Emergency_Brake();
-		// This code waits for there to be exactly 5 characters on the receive buffer (4 digits + the newline)
-		// and then calls scanf() so that the data is read all at one time and there is no extra delay
-		// This will be replaced with code that reads a character each time a new one is typed by the user
-		// and fills an array with the characters until a newline is received, and then determines the new
-		// setpoint from the characters in the array
-		if (UART0_RCFIFO >= 5) {
-			int new_setpoint = Get_New_Setpoint();
-			if (new_setpoint != -1) {
-				set_point = new_setpoint;
-				printf("Set point updated: %d\n", set_point);
-			}
+		if (UART0_RCFIFO > 0) {
+			Get_Digit();
 		}
 		PID_Loop();
 		Update_UI();
 		software_delay(1000000UL);
 	}
-
-/*
-	char j;
-	unsigned long sum;
-	for (i = 30; i < 30 + 20; ++i) {
-		PWM_Set_Duty_Cycle(i);
-
-		sum = 0;
-		for (j = 0; j < 16; ++j) {
-			sum += ADC_raw_val();
-		}
-		printf("%hu \n", sum >> 4 );
-
-		software_delay(9000000UL);
-	}
-
-	software_delay(1000000UL);
-
-	// Throttle off
-	PWM_Set_Duty_Cycle(STARTUP_PWM_DC);
-*/
-	while(1);
-
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
   /*** RTOS startup code. Macro PEX_RTOS_START is defined by the RTOS component. DON'T MODIFY THIS CODE!!! ***/
