@@ -73,8 +73,8 @@ void software_delay(unsigned long delay)
     while (delay > 0) delay--;
 }
 void PWM_Set_Duty_Cycle(float desired_duty_cycle_percent) {
-	if (emergency_brake_active_flag)
-		return;
+	//if (emergency_brake_active_flag)
+	//	return;
 	float inverted_duty_cycle = 100.0 - desired_duty_cycle_percent;
 	PWM1_SetRatio16((uint16_t)(655.0 * inverted_duty_cycle));
 }
@@ -215,9 +215,8 @@ int main(void)
   SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
   PORTB_PCR2 = 0x100; // Interrupt on rising edge on port B pin 2
   GPIOB_PDDR &= 0xFFFFFFFB;
-  // Flush UART receive buffer
-  while (UART0_RCFIFO > 0)
-	  UART0_D;
+  // Flush UART transmit and receive buffers
+  UART0_CFIFO = 0XC0;
 
   printf("\n-----------------------------\n");
   printf("*****************************\n");
