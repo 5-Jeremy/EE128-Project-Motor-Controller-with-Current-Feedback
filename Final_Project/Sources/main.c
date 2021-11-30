@@ -45,28 +45,27 @@
 #include "Init_Config.h"
 /* User includes (#include below this line is not maintained by Processor Expert) */
 /************* Defined Constants *************/
-// milliamps per bit = 1.25881
-// With no current, the ADC reads around 49843 = 2.51 volts
 #define MILLIVOLTS_PER_BIT 0.05035
 #define MILLIAMPS_PER_MILLIVOLT 25
 #define MILLIAMPS_PER_BIT 1.25881
+// Duty cycle to hold the motor off
 #define STARTUP_PWM_DC 19
 // Lowest duty cycle that gets the motor to spin
 #define MOTOR_START_DC 30
 // Limit on the duty cycle that the ESC can run the motor at
 #define DC_UPPER_LIMIT 80
-// Limits on what the user can choose as the set point
+// Limit on what the user can choose as the set point
 #define MAX_SETPOINT 800
 /************* Global Variables *************/
 float duty_cycle = MOTOR_START_DC;
 unsigned short curr_current = 0;
-float curr_error = 0;
+int curr_error = 0;
 int set_point = 0;
 const float Kp = 0.001;
 const float Kd = 0.002;
 const float Ki = 0.0001;
-float last_error = 0;
-float error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
+int last_error = 0;
+int error_memory [10] = {0,0,0,0,0,0,0,0,0,0};
 
 void software_delay(unsigned long delay)
 {
@@ -77,6 +76,11 @@ void PWM_Set_Duty_Cycle(float desired_duty_cycle_percent) {
 	//	return;
 	float inverted_duty_cycle = 100.0 - desired_duty_cycle_percent;
 	PWM1_SetRatio16((uint16_t)(655.0 * inverted_duty_cycle));
+}
+void Motor_Start_Up() {
+	// Send a 19% duty cycle signal on start-up
+	PWM_Set_Duty_Cycle(STARTUP_PWM_DC);
+	software_delay(9000000UL);
 }
 unsigned short ADC_raw_val(void)
 {
@@ -102,6 +106,9 @@ unsigned short ADC_avg_val(void) {
 		return 0;
 	}
 }
+int current_in_milliamps(int current_bits) {
+	return (int)(current_bits * MILLIAMPS_PER_BIT);
+}
 void Check_Emergency_Brake() {
 	// Non-interrupt solution to emergency brake
 	if ((GPIOB_PDIR & 0x00000004) == 0) {
@@ -114,6 +121,15 @@ void PID_Loop() {
 	curr_current = ADC_avg_val();
 	// Needs to be a signed value
 	curr_error = set_point - curr_current;
+
+	// If the set point is specified as zero, then the motor is forced to stop.
+	// otherwise, the motor will be kept running by maintaining a minimum duty cycle of 30%
+	if (set_point == 0) {
+		PWM_Set_Duty_Cycle(STARTUP_PWM_DC);
+		duty_cycle = STARTUP_PWM_DC;
+		return;
+	}
+
 	float proportional = Kp * curr_error;
 	float derivative = Kd * (curr_error - last_error);
 	// Limit how much the derivative term can react to a rapid
@@ -125,19 +141,21 @@ void PID_Loop() {
 		derivative = -0.1;
 	}
 	last_error = curr_error;
+	// Integral term is the sum of the last 10 errors
 	char i;
 	float integral = 0;
 	for (i = 0; i < 9; ++i) {
 		error_memory[i] = error_memory[i+1];
 		integral += error_memory[i];
 	}
-	// index 9 stores the most recent error
+	// Index 9 stores the most recent error
 	error_memory[9] = curr_error;
 	integral += curr_error;
 	integral = Ki * integral;
-	// The control signal from the PID controller
-	float PID_control = proportional + derivative + integral;
 
+	float PID_control = proportional + derivative + integral;
+	// The control signal from the PID controller determines how much
+	// to change the duty cycle
 	duty_cycle = duty_cycle + PID_control;
 
 	// Establish upper and lower limits
@@ -151,13 +169,13 @@ void PID_Loop() {
 	PWM_Set_Duty_Cycle(duty_cycle);
 }
 void Update_UI() {
-	char* new_err_string [50];
-	gcvt(curr_error, 6, new_err_string);
 	char* new_pwm_string [50];
 	gcvt(duty_cycle, 6, new_pwm_string);
 	printf("-----------------------------\n");
-	printf("Current feedback: %hu \n", curr_current);
-	printf("Error: %s \n", new_err_string);
+	printf("Current feedback raw: %hu \n", curr_current);
+	printf("Current feedback in milliamps: %d \n", current_in_milliamps(curr_current));
+	printf("Error: %d \n", curr_error);
+	printf("Error in milliamps: %d \n", current_in_milliamps(curr_error));
 	printf("New duty cycle: %s \n", new_pwm_string);
 	printf("-----------------------------\n");
 }
@@ -213,7 +231,7 @@ int main(void)
   ADC0_SC1A = 0x1F; // Disable the module, ADCH = 11111
   // Setup required for emergency break
   SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
-  PORTB_PCR2 = 0x100; // Interrupt on rising edge on port B pin 2
+  PORTB_PCR2 = 0x100;
   GPIOB_PDDR &= 0xFFFFFFFB;
   // Flush UART transmit and receive buffers
   UART0_CFIFO = 0XC0;
@@ -222,13 +240,7 @@ int main(void)
   printf("*****************************\n");
   printf("-----------------------------\n");
 
-	// Send a 19% duty cycle signal on start-up
-	PWM_Set_Duty_Cycle(STARTUP_PWM_DC);
-	software_delay(5000000UL);
-
-	// Start-up motor
-	PWM_Set_Duty_Cycle(MOTOR_START_DC);
-	software_delay(5000000UL);
+  Motor_Start_Up();
 
 	while(1) {
 		Check_Emergency_Brake();
